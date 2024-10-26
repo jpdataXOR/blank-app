@@ -1,19 +1,41 @@
-# 🎈 Blank app template
+import streamlit as st
+import yfinance as yf
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
 
-A simple Streamlit app template for you to modify!
+# App title
+st.title("Bitcoin (BTC) Hourly Price Chart")
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://blank-app-template.streamlit.app/)
+# Define the BTC ticker symbol
+btc_ticker = "BTC-USD"
 
-### How to run it on your own machine
+# Define the date range (e.g., last 48 hours)
+end_date = datetime.now()
+start_date = end_date - timedelta(days=2)  # Last 2 days
 
-1. Install the requirements
+# Fetch hourly data for BTC
+btc_data = yf.download(btc_ticker, start=start_date, end=end_date, interval="1h")
 
-   ```
-   $ pip install -r requirements.txt
-   ```
+# Check if data was fetched successfully
+if btc_data.empty:
+    st.write("Failed to retrieve BTC data. Please try again later.")
+else:
+    # Create a Plotly line chart
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=btc_data.index, y=btc_data['Close'], mode='lines+markers', name='BTC-USD'))
 
-2. Run the app
+    # Chart layout
+    fig.update_layout(
+        title="BTC Hourly Price Chart (Last 48 Hours)",
+        xaxis_title="Date/Time",
+        yaxis_title="Price (USD)",
+        xaxis=dict(showgrid=True),
+        yaxis=dict(showgrid=True)
+    )
 
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+    # Display the chart in the app
+    st.plotly_chart(fig)
+
+    # Show latest BTC price
+    latest_price = btc_data['Close'].iloc[-1]
+    st.subheader(f"Latest BTC Price: ${latest_price:.2f}")
